@@ -15,7 +15,7 @@
 
         <Label
             id="headerLabel"
-            text="CBC Family Church"
+            text="Calvary Baptist Church"
             translation="[100,50]"
             font="font:LargeBoldSystemFont"
             color="0xFFFFFFFF" />
