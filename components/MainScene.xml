@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="MainScene" extends="Scene">
+    <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
+
+    <interface>
+        <field id="feed" type="assocarray" alwaysNotify="true" onChange="onFeedChanged" />
+    </interface>
+
+    <children>
+        <Rectangle
+            id="background"
+            width="1920"
+            height="1080"
+            color="0x000000FF" />
+
+        <Label
+            id="headerLabel"
+            text="CBC Family Church"
+            translation="[100,50]"
+            font="font:LargeBoldSystemFont"
+            color="0xFFFFFFFF" />
+
+        <LabelList
+            id="videoList"
+            translation="[100,150]"
+            itemSize="[800,50]"
+            numRows="10"
+            itemSpacing="[0,10]"
+            color="0xEEEEEEFF"
+            focusedColor="0xFFFFFFFF"
+            drawFocusFeedback="true"
+            vertFocusAnimationStyle="floatingFocus"
+            visible="true" />
+
+        <Rectangle
+            id="infoPanel"
+            translation="[950,150]"
+            width="870"
+            height="400"
+            opacity="0.2"
+            color="0x202020FF" />
+
+        <Label
+            id="titleLabel"
+            translation="[970,170]"
+            width="830"
+            wrap="true"
+            font="font:MediumBoldSystemFont"
+            color="0xFFFFFFFF" />
+
+        <Label
+            id="descriptionLabel"
+            translation="[970,250]"
+            width="830"
+            wrap="true"
+            maxLines="4"
+            font="font:MediumSystemFont"
+            color="0xEEEEEEFF" />
+
+        <Label
+            id="dateLabel"
+            translation="[970,350]"
+            width="830"
+            font="font:MediumSystemFont"
+            color="0xCCCCCCFF" />
+
+        <Label
+            id="helpText"
+            translation="[100,980]"
+            text="Press OK to play • Press BACK to return"
+            font="font:SmallSystemFont"
+            color="0x808080FF" />
+
+        <Video
+            id="videoPlayer"
+            width="1920"
+            height="1080"
+            visible="false" />
+    </children>
+</component>

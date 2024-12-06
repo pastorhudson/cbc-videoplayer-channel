@@ -1,50 +1,90 @@
-' ********** Copyright 2016 Roku Corp.  All Rights Reserved. **********
+sub main()
+    print "################"
+    print "Start of Channel"
+    print "################"
 
-' 1st function called when channel application starts.
-sub Main(input as Dynamic)
-  print "################"
-  print "Start of Channel"
-  print "################"
-  ' Add deep linking support here. Input is an associative array containing
-  ' parameters that the client defines. Examples include "options, contentID, etc."
-  ' See guide here: https://sdkdocs.roku.com/display/sdkdoc/External+Control+Guide
-  ' For example, if a user clicks on an ad for a movie that your app provides,
-  ' you will have mapped that movie to a contentID and you can parse that ID
-  ' out from the input parameter here.
-  ' Call the service provider API to look up
-  ' the content details, or right data from feed for id
-  if input <> invalid
-    print "Received Input -- write code here to check it!"
-    if input.reason <> invalid
-      if input.reason = "ad" then
-        print "Channel launched from ad click"
-        'do ad stuff here
-      end if
-    end if
-    if input.contentID <> invalid
-      m.contentID = input.contentID
-      print "contentID is: " + input.contentID
-      'launch/prep the content mapped to the contentID here
-    end if
-  end if
-  showHeroScreen()
-end sub
+    screen = CreateObject("roSGScreen")
+    m.port = CreateObject("roMessagePort")
+    screen.setMessagePort(m.port)
 
-' Initializes the scene and shows the main homepage.
-' Handles closing of the channel.
-sub showHeroScreen()
-  print "main.brs - [showHeroScreen]"
-  screen = CreateObject("roSGScreen")
-  m.port = CreateObject("roMessagePort")
-  screen.setMessagePort(m.port)
-  scene = screen.CreateScene("SimpleVideoScene")
-  screen.show()
+    scene = screen.CreateScene("MainScene")
 
-  while(true)
-    msg = wait(0, m.port)
-    msgType = type(msg)
-    if msgType = "roSGScreenEvent"
-      if msg.isScreenClosed() then return
+    ' Create URL transfer object
+    ut = CreateObject("roURLTransfer")
+    ut.SetPort(m.port)
+    ut.SetURL("https://roku.cbcfamily.church")
+    ut.SetCertificatesFile("common:/certs/ca-bundle.crt")
+    ut.InitClientCertificates()
+
+    print "Fetching feed from https://roku.cbcfamily.church"
+
+    ' Make the request
+    if ut.AsyncGetToString() then
+        timeout = 10000 ' 10 seconds timeout
+        start = CreateObject("roTimespan")
+
+        while true
+            msg = wait(100, m.port) ' Check every 100ms
+
+            if msg = invalid
+                if start.TotalMilliseconds() > timeout
+                    print "Timeout fetching feed"
+                    exit while
+                end if
+
+            else if type(msg) = "roUrlEvent"
+                code = msg.GetResponseCode()
+                print "Response received with code: "; code
+
+                if code = 200
+                    feedString = msg.GetString()
+                    print "Feed length: "; len(feedString)
+
+                    ' Parse the feed
+                    feed = ParseJson(feedString)
+                    if feed <> invalid
+                        ' Debug prints
+                        print "Feed parsed successfully"
+                        print "Feed keys: "; feed.Keys()
+                        if feed.movies <> invalid
+                            print "Number of movies: "; feed.movies.Count()
+                            if feed.movies.Count() > 0
+                                print "First movie title: "; feed.movies[0].title
+                                print "First movie content: "; feed.movies[0].content
+                            end if
+                        end if
+                        if feed.liveFeeds <> invalid
+                            print "Number of live feeds: "; feed.liveFeeds.Count()
+                        end if
+
+                        ' Set the feed to the scene
+                        scene.feed = feed
+                        print "Feed set to scene"
+                    else
+                        print "Error parsing feed JSON"
+                        print "Raw feed string: "; feedString.Left(500) ' Print first 500 chars
+                    end if
+                else
+                    print "Error fetching feed. Response code: "; code
+                end if
+                exit while
+            end if
+        end while
+    else
+        print "Failed to start feed request"
     end if
-  end while
+
+    screen.show()
+    print "Screen shown"
+
+    while(true)
+        msg = wait(0, m.port)
+        msgType = type(msg)
+        if msgType = "roSGScreenEvent"
+            if msg.isScreenClosed()
+                print "Exiting channel"
+                return
+            end if
+        end if
+    end while
 end sub

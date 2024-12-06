@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="StandardRowListItem" extends="Group">
+    <interface>
+        <field id="itemContent" type="node" onChange="itemContentChanged" />
+        <field id="rowFocusPercent" type="float" onChange="onFocusPercentChange" />
+    </interface>
+
+    <children>
+        <Rectangle
+            id="focusIndicator"
+            width="800"
+            height="50"
+            color="0x404040FF"
+            opacity="0.0" />
+
+        <Label
+            id="itemLabel"
+            width="780"
+            height="50"
+            translation="[10,10]"
+            font="font:MediumSystemFont"
+            color="0xEEEEEEFF" />
+    </children>
+
+    <script type="text/brightscript">
+        <![CDATA[
+        sub init()
+            m.itemLabel = m.top.findNode("itemLabel")
+            m.focusIndicator = m.top.findNode("focusIndicator")
+        end sub
+
+        sub itemContentChanged()
+            item = m.top.itemContent
+            if item <> invalid
+                m.itemLabel.text = item.title
+            end if
+        end sub
+
+        sub onFocusPercentChange()
+            focusPercent = m.top.rowFocusPercent
+            m.focusIndicator.opacity = focusPercent
+            if focusPercent > 0.5
+                m.itemLabel.font = "font:MediumBoldSystemFont"
+                m.itemLabel.color = "0xFFFFFFFF"
+            else
+                m.itemLabel.font = "font:MediumSystemFont"
+                m.itemLabel.color = "0xEEEEEEFF"
+            end if
+        end sub
+        ]]>
+    </script>
+</component>
