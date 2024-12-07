@@ -3,7 +3,9 @@
     <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
 
     <interface>
-        <field id="feed" type="assocarray" alwaysNotify="true" onChange="onFeedChanged" />
+        <field id="feed" type="assocarray" alwaysNotify="true" />
+        <field id="launchArgs" type="assocarray" alwaysNotify="true" onChange="onLaunchArgsChanged" />
+        <field id="inputData" type="assocarray" />
     </interface>
 
     <children>

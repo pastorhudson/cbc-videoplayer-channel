@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="LoadingIndicator" extends="Scene">
+    <interface>
+        <!-- Add any interface elements here if needed -->
+    </interface>
+
+    <script type="text/brightscript">
+    <![CDATA[
+    sub init()
+        m.spinner = m.top.findNode("spinner")
+        m.spinner.uri = "pkg:/images/spinner.png"
+        m.spinner.control = "start"
+    end sub
+    ]]>
+    </script>
+
+    <children>
+        <Poster
+            id="spinner"
+            translation="[ 960, 540 ]"
+            width="128"
+            height="128"
+            uri=""
+            spin="true"
+        />
+    </children>
+</component>

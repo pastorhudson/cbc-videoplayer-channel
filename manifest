@@ -1,5 +1,5 @@
 ##   Channel Details
-title=CBC Family Church
+title=Calvary Baptist Church
 major_version=1
 minor_version=0
 build_version=1
@@ -23,3 +23,5 @@ bs_const=DEBUG=true
 
 ##   SceneGraph Settings
 rsg_version=1.2
+
+supports_input_launch=1
