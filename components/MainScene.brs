@@ -13,6 +13,9 @@ sub init()
     ' Set up flags for feed loading and deep linking
     m.feedLoaded = false
 
+    m.top.observeField("launchArgs", "onLaunchArgsChanged")
+
+
     ' Store launch args and set up a flag to track deep linking
     m.launchArgs = m.top.launchArgs
     print "Here's launchArgs"
@@ -41,6 +44,21 @@ sub init()
     ' Check if login is required (add your own logic)
     if isLoginRequired() then
         showLoginDialog()
+    end if
+end sub
+
+' Then add this function
+sub onLaunchArgsChanged()
+    print "Launch args changed!"
+    print m.top.launchArgs
+
+    if m.top.launchArgs <> invalid
+        m.launchArgs = m.top.launchArgs
+
+        ' If feed is already loaded, process deep link now
+        if m.feedLoaded = true
+            processDeepLink(m.launchArgs)
+        end if
     end if
 end sub
 
