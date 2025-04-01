@@ -9,6 +9,8 @@ sub init()
     m.description = m.top.findNode("descriptionLabel")
     m.dateLabel = m.top.findNode("dateLabel")
     m.thumbnailPoster = m.top.findNode("thumbnailPoster")
+    print "Here's launchArgs"
+    print m.launchArgs
 
     ' Set up flags for feed loading and deep linking
     m.feedLoaded = false
@@ -87,6 +89,7 @@ sub onFeedChanged()
         ' Process any pending deep links
         if m.launchArgs <> invalid
             print "Processing launch arguments after feed loaded"
+            print m.launchArgs
             processDeepLink(m.launchArgs)
             m.launchArgs = invalid
         end if

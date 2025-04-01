@@ -1,7 +1,21 @@
-sub main()
+sub main(args as Object)
     print "################"
     print "Start of Channel"
     print "################"
+
+    ' Print launch arguments for debugging
+
+
+    print "Launch args:"
+
+    if args <> invalid
+        print "IT's VALID"
+        print args
+
+        for each key in args
+            print key + ": " + args[key]
+        end for
+    end if
 
     screen = CreateObject("roSGScreen")
     m.port = CreateObject("roMessagePort")
@@ -12,6 +26,12 @@ sub main()
     input.SetMessagePort(m.port)
 
     scene = screen.CreateScene("MainScene")
+
+    ' FIXED: Pass launch arguments to scene
+    if args <> invalid
+        print "Passing launch args to scene"
+        scene.launchArgs = args
+    end if
 
     ' Create URL transfer object
     ut = CreateObject("roURLTransfer")
