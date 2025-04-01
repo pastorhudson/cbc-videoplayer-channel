@@ -436,43 +436,83 @@ sub playContentDirectly(movie as Object)
     end if
 end sub
 
-' Add this function to your MainScene.brs file
 function formatDate(dateString as String) as String
     if dateString = invalid or dateString = "" then return ""
 
-    ' Parse the date - assuming format is YYYY-MM-DD or MM/DD/YYYY
-    dateParts = []
+    ' Simple string manipulation approach
+    ' The date format in your feed appears to be something like:
+    ' "2025-03-30T11:32:55-0400"
 
-    ' Check for ISO format (YYYY-MM-DD)
-    if InStr(1, dateString, "-") > 0 then
-        dateParts = dateString.Split("-")
-        if dateParts.Count() >= 3 then
-            year = dateParts[0]
-            month = dateParts[1]
-            day = dateParts[2]
+    ' First check if this is an ISO-like format with a T separator
+    tPosition = InStr(1, dateString, "T")
+    if tPosition > 0 then
+        ' Split the string into date and time parts
+        datePart = Left(dateString, tPosition - 1)  ' "2025-03-30"
+
+        ' Get the remaining part which contains time and possibly timezone
+        remainder = Right(dateString, Len(dateString) - tPosition)
+
+        ' Find time portion by getting everything until a potential timezone marker
+        timePart = remainder
+        tzPos = InStr(1, remainder, "-")
+        if tzPos = 0 then tzPos = InStr(1, remainder, "+")
+
+        if tzPos > 0 then
+            timePart = Left(remainder, tzPos - 1)  ' "11:32:55"
         end if
-    ' Check for US format (MM/DD/YYYY)
-    else if InStr(1, dateString, "/") > 0 then
-        dateParts = dateString.Split("/")
-        if dateParts.Count() >= 3 then
-            month = dateParts[0]
-            day = dateParts[1]
-            year = dateParts[2]
+
+        ' Format date part
+        formattedDate = ""
+        if InStr(1, datePart, "-") > 0 then
+            ' Parse date in YYYY-MM-DD format
+            datePieces = datePart.Split("-")
+            if datePieces.Count() >= 3 then
+                ' Convert month number to name
+                monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+                monthIndex = Val(datePieces[1]) - 1  ' Adjust for 0-based array
+                if monthIndex >= 0 and monthIndex < 12 then
+                    monthName = monthNames[monthIndex]
+                    day = Val(datePieces[2])
+                    year = Val(datePieces[0])
+
+                    formattedDate = monthName + " " + day.ToStr() + ", " + year.ToStr()
+                end if
+            end if
         end if
-    else
-        ' Unknown format, return original
-        return "Date: " + dateString
+
+        ' Format time part
+        formattedTime = ""
+        if InStr(1, timePart, ":") > 0 then
+            ' Parse time in HH:MM:SS format
+            timePieces = timePart.Split(":")
+            if timePieces.Count() >= 2 then
+                hour = Val(timePieces[0])
+                minute = Val(timePieces[1])
+
+                ' Convert to 12-hour format
+                ampm = "AM"
+                if hour >= 12 then
+                    ampm = "PM"
+                    if hour > 12 then hour = hour - 12
+                end if
+                if hour = 0 then hour = 12
+
+                ' Format with leading zero for minutes if needed
+                minuteStr = minute.ToStr()
+                if minute < 10 then minuteStr = "0" + minuteStr
+
+                formattedTime = hour.ToStr() + ":" + minuteStr + " " + ampm
+            end if
+        end if
+
+        ' Combine date and time if both were successfully formatted
+        if formattedDate <> "" and formattedTime <> "" then
+            return formattedDate + " at " + formattedTime
+        else if formattedDate <> "" then
+            return formattedDate
+        end if
     end if
 
-    ' Array of month names
-    monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-
-    ' Convert month number to integer and validate
-    monthNum = Val(month)
-    if monthNum < 1 or monthNum > 12 then return "Date: " + dateString
-
-    ' Format the date nicely
-    formattedDate = monthNames[monthNum - 1] + " " + day + ", " + year
-
-    return formattedDate
+    ' If we couldn't parse the date, just return the original
+    return dateString
 end function
