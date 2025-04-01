@@ -9,21 +9,21 @@ sub init()
     m.description = m.top.findNode("descriptionLabel")
     m.dateLabel = m.top.findNode("dateLabel")
     m.thumbnailPoster = m.top.findNode("thumbnailPoster")
-    print "Here's launchArgs"
-    print m.launchArgs
 
     ' Set up flags for feed loading and deep linking
     m.feedLoaded = false
 
     ' Store launch args and set up a flag to track deep linking
     m.launchArgs = m.top.launchArgs
+    print "Here's launchArgs"
+    print m.launchArgs
 
     ' Log launch args if available
     if m.launchArgs <> invalid
         print "Launch args in MainScene.init():"
-        for each key in m.launchArgs
-            print key + ": " + m.launchArgs[key]
-        end for
+        ' Convert launch args to JSON for clean debugging
+        launchArgsJson = FormatJson(m.launchArgs)
+        print "Launch args as JSON: " + launchArgsJson
     end if
 
     ' Create input task for listening to deep link events after launch
@@ -41,6 +41,28 @@ sub init()
     ' Check if login is required (add your own logic)
     if isLoginRequired() then
         showLoginDialog()
+    end if
+end sub
+
+sub onInputDataChanged()
+    inputData = m.inputTask.inputData
+    print "Received inputData: "; inputData
+
+    if inputData <> invalid
+        ' Debug print all fields as JSON
+        print "Input data fields:"
+        inputDataJson = FormatJson(inputData)
+        print "Input data as JSON: " + inputDataJson
+
+        ' Only process if feed is loaded, otherwise store for later
+        if m.feedLoaded = true
+            print "Feed already loaded - processing deep link immediately"
+            processDeepLink(inputData)
+        else
+            print "Feed not yet loaded - saving deep link for later"
+            ' Save as launch args since we use the same mechanism
+            m.launchArgs = inputData
+        end if
     end if
 end sub
 
@@ -98,22 +120,6 @@ sub onFeedChanged()
     end if
 end sub
 
-sub onInputDataChanged()
-    inputData = m.inputTask.inputData
-    print "Received inputData: "; inputData
-
-    if inputData <> invalid
-        ' Only process if feed is loaded, otherwise store for later
-        if m.feedLoaded = true
-            print "Feed already loaded - processing deep link immediately"
-            processDeepLink(inputData)
-        else
-            print "Feed not yet loaded - saving deep link for later"
-            ' Save as launch args since we use the same mechanism
-            m.launchArgs = inputData
-        end if
-    end if
-end sub
 
 sub loadContent()
     print "loadContent() started"
@@ -280,24 +286,45 @@ sub processDeepLink(deepLinkData as Object)
         return
     end if
 
+    ' Print deepLinkData as JSON for debugging
+    print "Deep link data received:"
+    deepLinkJson = FormatJson(deepLinkData)
+    print deepLinkJson
+
     ' Support both parameter naming conventions
     contentId = invalid
     mediaType = invalid
 
+    ' Helper function to safely get string value
+    getStringValue = function(obj as Object, key as String) as Dynamic
+        if obj.DoesExist(key)
+            value = obj[key]
+            valueType = type(value)
+            if valueType <> "roString" and valueType <> "String"
+                print "Converting " + key + " from " + valueType + " to string"
+                return str(value)
+            end if
+            return value
+        end if
+        return invalid
+    end function
+
+    ' Try all possible content ID keys
     if deepLinkData.DoesExist("contentId")
-        contentId = deepLinkData.contentId
+        contentId = getStringValue(deepLinkData, "contentId")
     else if deepLinkData.DoesExist("contentID")
-        contentId = deepLinkData.contentID
+        contentId = getStringValue(deepLinkData, "contentID")
     else if deepLinkData.DoesExist("content_id")
-        contentId = deepLinkData.content_id
+        contentId = getStringValue(deepLinkData, "content_id")
     end if
 
+    ' Try all possible media type keys
     if deepLinkData.DoesExist("mediaType")
-        mediaType = deepLinkData.mediaType
+        mediaType = getStringValue(deepLinkData, "mediaType")
     else if deepLinkData.DoesExist("mediatype")
-        mediaType = deepLinkData.mediatype
+        mediaType = getStringValue(deepLinkData, "mediatype")
     else if deepLinkData.DoesExist("media_type")
-        mediaType = deepLinkData.media_type
+        mediaType = getStringValue(deepLinkData, "media_type")
     end if
 
     print "Processing deep link: contentId="; contentId; " mediaType="; mediaType

@@ -4,17 +4,14 @@ sub main(args as Object)
     print "################"
 
     ' Print launch arguments for debugging
-
-
     print "Launch args:"
 
     if args <> invalid
-        print "IT's VALID"
-        print args
+        print "Args is VALID"
 
-        for each key in args
-            print key + ": " + args[key]
-        end for
+        ' Convert args to JSON for clean debugging
+        argsJson = FormatJson(args)
+        print "Args as JSON: " + argsJson
     end if
 
     screen = CreateObject("roSGScreen")
@@ -27,7 +24,7 @@ sub main(args as Object)
 
     scene = screen.CreateScene("MainScene")
 
-    ' FIXED: Pass launch arguments to scene
+    ' Pass launch arguments to scene
     if args <> invalid
         print "Passing launch args to scene"
         scene.launchArgs = args
@@ -56,9 +53,9 @@ sub main(args as Object)
 
                 if info <> invalid and type(info) = "roAssociativeArray" then
                     print "Input info received:"
-                    for each key in info
-                        print key + ": " + info[key]
-                    end for
+                    ' Convert info to JSON for clean debugging
+                    infoJson = FormatJson(info)
+                    print "Input info as JSON: " + infoJson
 
                     ' Check if this is a deep link and pass to scene
                     scene.inputData = info
