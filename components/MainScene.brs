@@ -226,7 +226,7 @@ sub updateInfoPanel(index as Integer)
             m.title.text = movie.title
             m.description.text = movie.shortDescription
             if movie.releaseDate <> invalid
-                m.dateLabel.text = "Date: " + movie.releaseDate
+                m.dateLabel.text = formatDate(movie.releaseDate)
             else
                 m.dateLabel.text = ""
             end if
@@ -435,3 +435,44 @@ sub playContentDirectly(movie as Object)
         end if
     end if
 end sub
+
+' Add this function to your MainScene.brs file
+function formatDate(dateString as String) as String
+    if dateString = invalid or dateString = "" then return ""
+
+    ' Parse the date - assuming format is YYYY-MM-DD or MM/DD/YYYY
+    dateParts = []
+
+    ' Check for ISO format (YYYY-MM-DD)
+    if InStr(1, dateString, "-") > 0 then
+        dateParts = dateString.Split("-")
+        if dateParts.Count() >= 3 then
+            year = dateParts[0]
+            month = dateParts[1]
+            day = dateParts[2]
+        end if
+    ' Check for US format (MM/DD/YYYY)
+    else if InStr(1, dateString, "/") > 0 then
+        dateParts = dateString.Split("/")
+        if dateParts.Count() >= 3 then
+            month = dateParts[0]
+            day = dateParts[1]
+            year = dateParts[2]
+        end if
+    else
+        ' Unknown format, return original
+        return "Date: " + dateString
+    end if
+
+    ' Array of month names
+    monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+    ' Convert month number to integer and validate
+    monthNum = Val(month)
+    if monthNum < 1 or monthNum > 12 then return "Date: " + dateString
+
+    ' Format the date nicely
+    formattedDate = monthNames[monthNum - 1] + " " + day + ", " + year
+
+    return formattedDate
+end function
