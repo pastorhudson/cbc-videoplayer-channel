@@ -24,8 +24,7 @@ sub main()
 
     if ut.AsyncGetToString() then
         feedReceived = false
-        timeout = 10000 ' 10 seconds timeout
-        start = CreateObject("roTimespan")
+        ' Removed unused timeout and start variables
 
         screen.show()
 

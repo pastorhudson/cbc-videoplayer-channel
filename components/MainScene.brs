@@ -27,6 +27,43 @@ sub init()
 
     ' Observe feed changes
     m.top.observeField("feed", "onFeedChanged")
+
+    ' Check if login is required (add your own logic)
+    if isLoginRequired() then
+        showLoginDialog()
+    end if
+end sub
+
+function isLoginRequired() as Boolean
+    ' Add your own logic to determine if login is required
+    ' For example, check if user credentials are stored
+    ' Return true if login is required, false otherwise
+    return false ' Default to false for this example
+end function
+
+sub showLoginDialog()
+    ' Signal that a dialog is about to be displayed
+    m.top.signalBeacon("AppDialogInitiate")
+
+    ' Create and show your dialog here
+    ' For example:
+    ' m.loginDialog = createObject("roSGNode", "Dialog")
+    ' m.loginDialog.visible = true
+    ' m.loginDialog.observeField("buttonSelected", "onLoginDialogResponse")
+
+    ' Your dialog display code...
+end sub
+
+sub onLoginDialogResponse()
+    ' Process the dialog response here
+
+    ' Signal that the dialog interaction is complete
+    m.top.signalBeacon("AppDialogComplete")
+
+    ' Continue with your application flow
+    ' For example:
+    ' m.loginDialog.visible = false
+    ' loadContent()
 end sub
 
 sub onFeedChanged()
@@ -195,5 +232,15 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     return false
 end function
 
-' Include other functions from the original file
-' [...]
+sub checkDeepLink()
+    ' Implement deep linking logic here based on m.launchArgs
+    if m.launchArgs <> invalid and m.launchArgs.contentId <> invalid
+        contentId = m.launchArgs.contentId
+        mediaType = m.launchArgs.mediaType
+
+        print "Processing deep link: contentId="; contentId; " mediaType="; mediaType
+
+        ' Add your deep linking implementation here
+        ' For example, find the matching content and play it
+    end if
+end sub

@@ -21,7 +21,6 @@
         <LabelList
                 id="videoList"
                 translation="[100,150]"
-                width="700"
                 itemSize="[700,50]"
                 numRows="10"
                 itemSpacing="[0,10]"
@@ -30,7 +29,6 @@
                 drawFocusFeedback="true"
                 vertFocusAnimationStyle="floatingFocus"
                 visible="true"/>
-
         <!-- Info Panel Container on the right side -->
         <Rectangle
                 id="infoPanel"
@@ -39,16 +37,13 @@
                 height="550"
                 opacity="0.2"
                 color="0x202020FF"/>
-
         <!-- Thumbnail on the right -->
         <Poster
                 id="thumbnailPoster"
                 translation="[900,170]"
                 width="480"
                 height="270"
-                scaleRotateCenter="[240,135]"
-                scaling="zoom"/>
-
+                scaleRotateCenter="[240,135]"/>
         <!-- Title below the thumbnail -->
         <Label
                 id="titleLabel"
@@ -58,7 +53,6 @@
                 wrap="true"
                 font="font:MediumBoldSystemFont"
                 color="0xFFFFFFFF"/>
-
         <!-- Description below the title -->
         <Label
                 id="descriptionLabel"
@@ -69,7 +63,6 @@
                 maxLines="3"
                 font="font:MediumSystemFont"
                 color="0xEEEEEEFF"/>
-
         <!-- Date at the bottom of the panel -->
         <Label
                 id="dateLabel"
@@ -77,14 +70,12 @@
                 width="870"
                 font="font:MediumSystemFont"
                 color="0xCCCCCCFF"/>
-
         <Label
                 id="helpText"
                 translation="[100,980]"
                 text="Press OK to play • Press BACK to return"
                 font="font:SmallSystemFont"
                 color="0x808080FF"/>
-
         <Video
                 id="videoPlayer"
                 width="1920"
