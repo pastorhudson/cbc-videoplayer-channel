@@ -422,7 +422,8 @@ sub playContentDirectly(movie as Object)
         print "***** DEEP LINK SUCCESSFUL *****"
 
         ' Signal deep link success beacon for testing
-        m.top.signalBeacon("DeepLinkPlaybackStarted")
+        m.top.signalBeacon("AppLaunchComplete")
+
     else
         print "ERROR: Could not find video content for movie: "; movie.title
         if movie.content = invalid
