@@ -24,6 +24,7 @@ sub main(args as Object)
 
     scene = screen.CreateScene("MainScene")
 
+
     ' Pass launch arguments to scene
     if args <> invalid
         print "Passing launch args to scene"
