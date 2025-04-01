@@ -24,8 +24,6 @@ sub main()
 
     if ut.AsyncGetToString() then
         feedReceived = false
-        ' Removed unused timeout and start variables
-
         screen.show()
 
         while true
@@ -42,8 +40,8 @@ sub main()
                         print key + ": " + info[key]
                     end for
 
-                    ' Pass launch parameters to scene
-                    scene.launchArgs = info
+                    ' Check if this is a deep link and pass to scene
+                    scene.inputData = info
                 end if
             else if msgType = "roUrlEvent" and not feedReceived
                 code = msg.GetResponseCode()
@@ -54,19 +52,17 @@ sub main()
                     feed = ParseJson(feedString)
 
                     if feed <> invalid
-                        print "Feed parsed successfully, ensuring thumbnail fields are properly set"
-
-                        ' No need to add or modify thumbnail fields, as they're already in the feed
-                        ' and we'll access them directly in MainScene.brs
-
-                        print "Setting feed on scene"
+                        print "Feed parsed successfully - sending to scene"
                         scene.feed = feed
                         feedReceived = true
+                        print "Feed loaded successfully - any pending deep links will now be processed"
                     else
                         print "Error parsing feed JSON"
                     end if
                 else
                     print "Error fetching feed. Response code: "; code
+                    ' We might want to retry the feed fetch here
+                    print "Consider implementing retry logic for feed fetching"
                 end if
             else if msgType = "roSGScreenEvent"
                 if msg.isScreenClosed()
@@ -77,3 +73,32 @@ sub main()
         end while
     end if
 end sub
+
+function getDeepLinkArgs() as Object
+    ' This function is intentionally simplified to avoid compatibility issues
+    ' For the test script, launch args will be captured by the InputTask component instead
+
+    ' Return empty to avoid any startup errors
+    return invalid
+end function
+
+function parseQueryParams(queryString as String) as Object
+    params = CreateObject("roAssociativeArray")
+
+    ' Remove any leading ? if present
+    if Left(queryString, 1) = "?"
+        queryString = Right(queryString, Len(queryString) - 1)
+    end if
+
+    ' Split by & to get parameter pairs
+    pairs = queryString.Split("&")
+    for each pair in pairs
+        ' Split pair by = to get key and value
+        keyValue = pair.Split("=")
+        if keyValue.Count() = 2
+            params[keyValue[0]] = keyValue[1]
+        end if
+    end for
+
+    return params
+end function

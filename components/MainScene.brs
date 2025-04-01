@@ -10,16 +10,24 @@ sub init()
     m.dateLabel = m.top.findNode("dateLabel")
     m.thumbnailPoster = m.top.findNode("thumbnailPoster")
 
+    ' Set up flags for feed loading and deep linking
+    m.feedLoaded = false
+
     ' Store launch args and set up a flag to track deep linking
     m.launchArgs = m.top.launchArgs
-    m.deepLinkPending = (m.launchArgs <> invalid)
 
-    ' Debug print launch arguments
+    ' Log launch args if available
     if m.launchArgs <> invalid
-        print "Launch arguments received in init:"
-        print "ContentId: "; m.launchArgs.contentId
-        print "MediaType: "; m.launchArgs.mediaType
+        print "Launch args in MainScene.init():"
+        for each key in m.launchArgs
+            print key + ": " + m.launchArgs[key]
+        end for
     end if
+
+    ' Create input task for listening to deep link events after launch
+    m.inputTask = createObject("roSGNode", "inputTask")
+    m.inputTask.observeField("inputData", "onInputDataChanged")
+    m.inputTask.control = "RUN"
 
     ' Set up input port
     m.port = CreateObject("roMessagePort")
@@ -73,14 +81,34 @@ sub onFeedChanged()
         print "Feed is valid - loading content"
         loadContent()
 
-        ' Check if we have pending deep link
-        if m.deepLinkPending = true
-            print "Processing pending deep link"
-            checkDeepLink()
-            m.deepLinkPending = false
+        ' Set a flag to indicate feed is loaded
+        m.feedLoaded = true
+
+        ' Process any pending deep links
+        if m.launchArgs <> invalid
+            print "Processing launch arguments after feed loaded"
+            processDeepLink(m.launchArgs)
+            m.launchArgs = invalid
         end if
     else
         print "Feed is invalid in onFeedChanged"
+    end if
+end sub
+
+sub onInputDataChanged()
+    inputData = m.inputTask.inputData
+    print "Received inputData: "; inputData
+
+    if inputData <> invalid
+        ' Only process if feed is loaded, otherwise store for later
+        if m.feedLoaded = true
+            print "Feed already loaded - processing deep link immediately"
+            processDeepLink(inputData)
+        else
+            print "Feed not yet loaded - saving deep link for later"
+            ' Save as launch args since we use the same mechanism
+            m.launchArgs = inputData
+        end if
     end if
 end sub
 
@@ -99,6 +127,8 @@ sub loadContent()
         print "Adding live stream"
         liveNode = CreateObject("roSGNode", "ContentNode")
         liveNode.title = "🔴 " + m.top.feed.liveFeeds[0].title
+        liveNode.id = "live"
+        ' Don't set mediaType field, it's not supported on ContentNode
         rootNode.appendChild(liveNode)
     end if
 
@@ -108,8 +138,10 @@ sub loadContent()
         for each movie in m.top.feed.movies
             videoNode = CreateObject("roSGNode", "ContentNode")
             videoNode.title = movie.title
+            videoNode.id = movie.id
+            ' Don't set mediaType field, it's not supported on ContentNode
             rootNode.appendChild(videoNode)
-            print "Added movie: " + movie.title
+            print "Added movie: " + movie.title + " (ID: " + movie.id + ")"
         end for
     end if
 
@@ -188,6 +220,10 @@ sub onItemSelected()
     selectedIndex = m.videoList.itemSelected
     print "Selected index: "; selectedIndex
 
+    playItemAtIndex(selectedIndex)
+end sub
+
+sub playItemAtIndex(selectedIndex as Integer)
     if selectedIndex = 0 and m.top.feed.liveFeeds <> invalid and m.top.feed.liveFeeds.Count() > 0
         ' Handle live stream selection
         liveFeed = m.top.feed.liveFeeds[0]
@@ -232,15 +268,121 @@ function onKeyEvent(key as String, press as Boolean) as Boolean
     return false
 end function
 
-sub checkDeepLink()
-    ' Implement deep linking logic here based on m.launchArgs
-    if m.launchArgs <> invalid and m.launchArgs.contentId <> invalid
-        contentId = m.launchArgs.contentId
-        mediaType = m.launchArgs.mediaType
+sub processDeepLink(deepLinkData as Object)
+    if deepLinkData = invalid then return
 
-        print "Processing deep link: contentId="; contentId; " mediaType="; mediaType
+    ' Make sure we have feed data
+    if m.top.feed = invalid
+        print "ERROR: Cannot process deep link because feed is not loaded yet"
+        return
+    end if
 
-        ' Add your deep linking implementation here
-        ' For example, find the matching content and play it
+    ' Support both parameter naming conventions
+    contentId = invalid
+    mediaType = invalid
+
+    if deepLinkData.DoesExist("contentId")
+        contentId = deepLinkData.contentId
+    else if deepLinkData.DoesExist("contentID")
+        contentId = deepLinkData.contentID
+    else if deepLinkData.DoesExist("content_id")
+        contentId = deepLinkData.content_id
+    end if
+
+    if deepLinkData.DoesExist("mediaType")
+        mediaType = deepLinkData.mediaType
+    else if deepLinkData.DoesExist("mediatype")
+        mediaType = deepLinkData.mediatype
+    else if deepLinkData.DoesExist("media_type")
+        mediaType = deepLinkData.media_type
+    end if
+
+    print "Processing deep link: contentId="; contentId; " mediaType="; mediaType
+
+    if contentId = invalid
+        print "WARNING: No content ID found in deep link"
+        return
+    end if
+
+    ' Default to "movie" if mediaType is not provided
+    if mediaType = invalid
+        mediaType = "movie"
+        print "No mediaType specified, defaulting to 'movie'"
+    end if
+
+    ' Add debugging information
+    print "Searching for content with ID: "; contentId
+    print "Feed contains "; m.top.feed.movies.Count(); " movies"
+
+    ' Find the content in the feed based on the ID
+    if LCase(mediaType) = "live"
+        if m.top.feed.liveFeeds <> invalid and m.top.feed.liveFeeds.Count() > 0
+            liveFeed = m.top.feed.liveFeeds[0]
+            if liveFeed.id = contentId
+                ' Play the live stream
+                m.videoList.jumpToItem = 0
+                playItemAtIndex(0)
+            end if
+        end if
+    else ' Default to movie/video if mediaType isn't specified or is movie/video
+        ' Search for the content in the movies list
+        if m.top.feed.movies <> invalid
+            for i = 0 to m.top.feed.movies.Count() - 1
+                print "Checking movie ID: "; m.top.feed.movies[i].id
+                if m.top.feed.movies[i].id = contentId
+                    ' Calculate the actual index in the list (add 1 if there's a live stream)
+                    indexInList = i
+                    if m.top.feed.liveFeeds <> invalid and m.top.feed.liveFeeds.Count() > 0
+                        indexInList = i + 1
+                    end if
+
+                    print "Found matching content at index: "; indexInList
+                    ' Play the content immediately
+                    playContentDirectly(m.top.feed.movies[i])
+                    return
+                end if
+            end for
+            print "WARNING: Could not find content with ID: "; contentId
+        end if
+    end if
+end sub
+
+' New function to play content directly without going through the list selection
+sub playContentDirectly(movie as Object)
+    if movie = invalid
+        print "ERROR: Invalid movie object passed to playContentDirectly"
+        return
+    end if
+
+    print "Playing content directly: "; movie.title; " (ID: "; movie.id; ")"
+
+    content = CreateObject("roSGNode", "ContentNode")
+    content.streamFormat = "DASH"
+
+    ' Make sure the movie has content and videos
+    if movie.content <> invalid and movie.content.videos <> invalid and movie.content.videos.Count() > 0
+        print "Found video URL: " + movie.content.videos[0].url
+        content.url = movie.content.videos[0].url
+
+        ' Set up and play the video
+        m.videoPlayer.content = content
+        m.videoPlayer.visible = true
+        m.videoPlayer.control = "play"
+        m.videoPlayer.setFocus(true)
+
+        print "Video playback started directly for: "; movie.title
+        print "***** DEEP LINK SUCCESSFUL *****"
+
+        ' Signal deep link success beacon for testing
+        m.top.signalBeacon("DeepLinkPlaybackStarted")
+    else
+        print "ERROR: Could not find video content for movie: "; movie.title
+        if movie.content = invalid
+            print "movie.content is invalid"
+        else if movie.content.videos = invalid
+            print "movie.content.videos is invalid"
+        else
+            print "movie.content.videos count: "; movie.content.videos.Count()
+        end if
     end if
 end sub

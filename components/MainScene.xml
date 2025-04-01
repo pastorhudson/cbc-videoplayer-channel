@@ -3,8 +3,8 @@
     <script type="text/brightscript" uri="pkg:/components/MainScene.brs"/>
     <interface>
         <field id="feed" type="assocarray" alwaysNotify="true"/>
-        <field id="launchArgs" type="assocarray" alwaysNotify="true" onChange="onLaunchArgsChanged"/>
-        <field id="inputData" type="assocarray"/>
+        <field id="launchArgs" type="assocarray" alwaysNotify="true"/>
+        <field id="inputData" type="assocarray" alwaysNotify="true"/>
     </interface>
     <children>
         <Rectangle
