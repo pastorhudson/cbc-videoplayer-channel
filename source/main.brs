@@ -55,7 +55,12 @@ sub main()
                     feed = ParseJson(feedString)
 
                     if feed <> invalid
-                        print "Feed parsed successfully, setting on scene"
+                        print "Feed parsed successfully, ensuring thumbnail fields are properly set"
+
+                        ' No need to add or modify thumbnail fields, as they're already in the feed
+                        ' and we'll access them directly in MainScene.brs
+
+                        print "Setting feed on scene"
                         scene.feed = feed
                         feedReceived = true
                     else

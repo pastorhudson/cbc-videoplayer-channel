@@ -1,82 +1,94 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <component name="MainScene" extends="Scene">
-    <script type="text/brightscript" uri="pkg:/components/MainScene.brs" />
-
+    <script type="text/brightscript" uri="pkg:/components/MainScene.brs"/>
     <interface>
-        <field id="feed" type="assocarray" alwaysNotify="true" />
-        <field id="launchArgs" type="assocarray" alwaysNotify="true" onChange="onLaunchArgsChanged" />
-        <field id="inputData" type="assocarray" />
+        <field id="feed" type="assocarray" alwaysNotify="true"/>
+        <field id="launchArgs" type="assocarray" alwaysNotify="true" onChange="onLaunchArgsChanged"/>
+        <field id="inputData" type="assocarray"/>
     </interface>
-
     <children>
         <Rectangle
-            id="background"
-            width="1920"
-            height="1080"
-            color="0x000000FF" />
-
+                id="background"
+                width="1920"
+                height="1080"
+                color="0x000000FF"/>
         <Label
-            id="headerLabel"
-            text="Calvary Baptist Church"
-            translation="[100,50]"
-            font="font:LargeBoldSystemFont"
-            color="0xFFFFFFFF" />
-
+                id="headerLabel"
+                text="Calvary Baptist Church"
+                translation="[100,50]"
+                font="font:LargeBoldSystemFont"
+                color="0xFFFFFFFF"/>
         <LabelList
-            id="videoList"
-            translation="[100,150]"
-            itemSize="[800,50]"
-            numRows="10"
-            itemSpacing="[0,10]"
-            color="0xEEEEEEFF"
-            focusedColor="0xFFFFFFFF"
-            drawFocusFeedback="true"
-            vertFocusAnimationStyle="floatingFocus"
-            visible="true" />
+                id="videoList"
+                translation="[100,150]"
+                width="700"
+                itemSize="[700,50]"
+                numRows="10"
+                itemSpacing="[0,10]"
+                color="0xEEEEEEFF"
+                focusedColor="0xFFFFFFFF"
+                drawFocusFeedback="true"
+                vertFocusAnimationStyle="floatingFocus"
+                visible="true"/>
 
+        <!-- Info Panel Container on the right side -->
         <Rectangle
-            id="infoPanel"
-            translation="[950,150]"
-            width="870"
-            height="400"
-            opacity="0.2"
-            color="0x202020FF" />
+                id="infoPanel"
+                translation="[850,150]"
+                width="970"
+                height="550"
+                opacity="0.2"
+                color="0x202020FF"/>
+
+        <!-- Thumbnail on the right -->
+        <Poster
+                id="thumbnailPoster"
+                translation="[900,170]"
+                width="480"
+                height="270"
+                scaleRotateCenter="[240,135]"
+                scaling="zoom"/>
+
+        <!-- Title below the thumbnail -->
+        <Label
+                id="titleLabel"
+                translation="[900,455]"
+                width="870"
+                height="60"
+                wrap="true"
+                font="font:MediumBoldSystemFont"
+                color="0xFFFFFFFF"/>
+
+        <!-- Description below the title -->
+        <Label
+                id="descriptionLabel"
+                translation="[900,520]"
+                width="870"
+                height="120"
+                wrap="true"
+                maxLines="3"
+                font="font:MediumSystemFont"
+                color="0xEEEEEEFF"/>
+
+        <!-- Date at the bottom of the panel -->
+        <Label
+                id="dateLabel"
+                translation="[900,640]"
+                width="870"
+                font="font:MediumSystemFont"
+                color="0xCCCCCCFF"/>
 
         <Label
-            id="titleLabel"
-            translation="[970,170]"
-            width="830"
-            wrap="true"
-            font="font:MediumBoldSystemFont"
-            color="0xFFFFFFFF" />
-
-        <Label
-            id="descriptionLabel"
-            translation="[970,250]"
-            width="830"
-            wrap="true"
-            maxLines="4"
-            font="font:MediumSystemFont"
-            color="0xEEEEEEFF" />
-
-        <Label
-            id="dateLabel"
-            translation="[970,350]"
-            width="830"
-            font="font:MediumSystemFont"
-            color="0xCCCCCCFF" />
-
-        <Label
-            id="helpText"
-            translation="[100,980]"
-            text="Press OK to play • Press BACK to return"
-            font="font:SmallSystemFont"
-            color="0x808080FF" />
+                id="helpText"
+                translation="[100,980]"
+                text="Press OK to play • Press BACK to return"
+                font="font:SmallSystemFont"
+                color="0x808080FF"/>
 
         <Video
-            id="videoPlayer"
-            width="1920"
-            height="1080"
-            visible="false" />
+                id="videoPlayer"
+                width="1920"
+                height="1080"
+                visible="false"/>
     </children>
 </component>
